@@ -9,9 +9,9 @@ __author__ = 'GalaIO'
 from flask import Blueprint
 import app
 
-# 通过实例化一个 Blueprint 类对象可以创建蓝本。
-main = Blueprint('main', __name__)
-# 动态加载到app的路由链表中
-app.fetchRoute(main)
+# 下面被修饰器修饰的main函数，会返回一个同名的blueprint，用来部署路由
+@app.addBlueprint()
+def main():
+    return Blueprint('main', __name__)
 
 from . import views, errors
