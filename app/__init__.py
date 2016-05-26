@@ -24,7 +24,7 @@ def addBlueprint(url_prefix=None):
         # 使用异常来报错，检查数据类型
         if not isinstance(blueprint, Blueprint):
             raise Exception('the warped must return a Blueprint object!!!')
-        blueprint.head_url = url_prefix
+        blueprint.url_prefix = url_prefix
         return blueprint
     return decorator
 
@@ -47,7 +47,10 @@ def create_app(config_name):
             for obj_name in module.__dict__:
                 obj = getattr(module, obj_name)
                 if isinstance(obj, Blueprint):
-                    app.register_blueprint(obj, url_prefix=obj.head_url)
+                    if obj.url_prefix is None:
+                        app.register_blueprint(obj)
+                    else:
+                        app.register_blueprint(obj, url_prefix=obj.url_prefix)
                     break
     #返回app实例，让外部模块继续使用
     return app
