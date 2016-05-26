@@ -5,7 +5,6 @@ Apply command for user to control flask.
 from config import Config, root_dir
 import os
 from app import create_app, db
-from app.models import tables
 from flask.ext.script import Manager, Shell
 from flask.ext.migrate import Migrate, MigrateCommand
 
@@ -18,9 +17,15 @@ migrate = Migrate(app, db)
 
 # 吧数据模型导入python解释器用于测试
 def make_shell_context():
-    tables['app'] = app
-    tables['db'] = db
-    return tables
+    reflec_maps = {}
+    from app import models
+    for obj_name in models.__dict__:
+        obj = getattr(models, obj_name)
+        if hasattr(obj, '__bases__') and obj.__bases__[0] is db.Model:
+            reflec_maps[obj_name] = obj
+    reflec_maps['app'] = app
+    reflec_maps['db'] = db
+    return reflec_maps
 manager.add_command("shell", Shell(make_context=make_shell_context))
 
 # 添加数据迁移命令
