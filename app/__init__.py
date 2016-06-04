@@ -40,8 +40,11 @@ def create_app(config_name):
     # 逐个执行各个路由映射脚本，添加到route_list中
     for routes in os.listdir(app_dir):
         rou_path = os.path.join(app_dir, routes)
-        if (not os.path.isfile(rou_path)) and routes != 'static' and routes != 'templates':
-            __import__('app.' + routes)
+        if not os.path.isfile(rou_path):
+            try:
+                __import__('app.' + routes)
+            except ImportError, e:
+                print routes + 'is not a module!'
             module = sys.modules['app.' + routes]
             # 循环获取是否是需要的类型，然后动态调用
             for obj_name in module.__dict__:
