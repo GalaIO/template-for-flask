@@ -28,6 +28,20 @@ def addBlueprint(url_prefix=None):
         return blueprint
     return decorator
 
+# 一个更灵活的，更简单的生成蓝图的函数
+def BlueprintFactory(importname, url_prefix=None, isRootPath=False):
+    try:
+        name = importname.split('.').pop()
+    except IndexError, e:
+        raise Exception('please input a correct path, like main or app.main!!')
+    if isRootPath:
+        url_prefix = None
+        print 'build a root path!'
+    else:
+        url_prefix = '/' + name
+        print 'build a '+url_prefix+' path!'
+    return Blueprint(name=name, import_name=importname, url_prefix=url_prefix)
+
 # 延迟创建app， 为了让视图和模型与创建分开
 def create_app(config_name):
     app = Flask(__name__)
@@ -40,11 +54,13 @@ def create_app(config_name):
     # 逐个执行各个路由映射脚本，添加到route_list中
     for routes in os.listdir(app_dir):
         rou_path = os.path.join(app_dir, routes)
+        # 只加载包，不是模块
         if not os.path.isfile(rou_path):
             try:
                 __import__('app.' + routes)
             except ImportError, e:
                 print routes + 'is not a module!'
+                continue
             module = sys.modules['app.' + routes]
             # 循环获取是否是需要的类型，然后动态调用
             for obj_name in module.__dict__:
